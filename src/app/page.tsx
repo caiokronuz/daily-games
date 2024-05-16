@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from  'next/image'
 
 import {BsArrowRightSquare} from 'react-icons/bs'
+import { Input } from "@/components/input";
+import { GameCard } from "@/components/GameCard";
 
 
 async function getDailyGame(){
@@ -15,14 +17,24 @@ async function getDailyGame(){
   } 
 }
 
+async function getGamesData(){
+  try{
+    const res = await fetch(`${process.env.NEXT_API_URL}/next-api/?api=games`, {next: {revalidate: 320}})
+    return res.json()
+  }catch(err){
+    throw new Error("Falha na requisição")
+  } 
+}
+
 export default async function Home() {
 
   const dailyGame: GameProps = await getDailyGame();
-  //console.log(dailyGame)
+  const data: GameProps[] = await getGamesData()
 
   return (
     <main className="w-full">
       <Container>
+
         <h1 className="text-center font-bold text-xl mt-8 mb-5">Separamos um jogo exclusivo para você</h1>
         <Link href={`/game/${dailyGame.id}`}>
           <section className="w-full bg-black rounded-lg">
@@ -32,17 +44,29 @@ export default async function Home() {
                 <BsArrowRightSquare size={24} color="#FFF" />
               </div>
               <Image 
-                src={dailyGame.image_url}
-                alt={dailyGame.title}
-                priority
-                quality={100}
-                fill
-                className="max-h-96 object-cover rounded-lg opacity-50 hover:opacity-100 transition-all duration-300"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw"
-              />
+                  src={dailyGame.image_url}
+                  alt={dailyGame.title}
+                  priority
+                  quality={100}
+                  fill
+                  className="max-h-96 object-cover rounded-lg opacity-50 hover:opacity-100 transition-all duration-300"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw"
+                />
             </div>
           </section>
         </Link>
+
+        <Input />
+
+        <h2 className="text-lg font-bold mt-8 mb-5">
+          Jogos para conhecer
+        </h2>
+        <section className="grid gap-7 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {data.map( item => (
+            <GameCard key={item.id} data={item}/>
+          ))}
+        </section>
+
       </Container>
     </main>
   );
